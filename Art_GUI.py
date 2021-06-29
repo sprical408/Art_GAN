@@ -14,6 +14,7 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 from PIL import Image, ImageOps
 
+# GUI mainwindow
 class MainWindow(QMainWindow):
 
     def __init__(self):
@@ -58,6 +59,7 @@ class MainWindow(QMainWindow):
         self.setGeometry(300, 300, 960, 640)
         self.show()
 
+    # Open Image
     def OpenImage(self):
         fname = QFileDialog.getOpenFileName(self,'Open file', './',"Image files (*.jpg *.gif *.png)")
 
@@ -69,9 +71,9 @@ class MainWindow(QMainWindow):
         self.original_img.setPixmap(self.pixmap)
         self.original_img.adjustSize()
 
-
+    # Convert original image by trained GAN model
     def convert(self):
-        to_tensor = transforms.ToTensor()
+        to_tensor = transforms.ToTensor()   # image to tensor
 
         input_img_T = to_tensor(self.input)
 
@@ -80,6 +82,7 @@ class MainWindow(QMainWindow):
                                                 interpolation=transforms.InterpolationMode.BICUBIC)
         output = self.run(input_img_T)
 
+        # Resize the tensor size to fit trained GAN model
         qimg = qimage2ndarray.array2qimage(output, normalize=True)
 
         pixmap = QPixmap.fromImage(qimg).scaled(420, 420, aspectRatioMode=Qt.IgnoreAspectRatio,
@@ -87,6 +90,7 @@ class MainWindow(QMainWindow):
         self.result_img.setPixmap(QPixmap(pixmap))
         self.result_img.adjustSize()
 
+    # Load the trained GAN model
     def loadmodel(self):
         model_file,_= QFileDialog.getOpenFileName(self,'Open file', './',"Model (*.pt)")
         self.model = torch.load(model_file,map_location=torch.device('cpu'))
@@ -102,6 +106,7 @@ class MainWindow(QMainWindow):
         un_normalized_img = un_normalized_img * 255
         return np.uint8(un_normalized_img)
 
+    # Run the model to convert image
     def run(self,input):
         mean_ = 0.5
         std_ = 0.5
@@ -117,7 +122,7 @@ class MainWindow(QMainWindow):
 
         return output
 
-# Create Generator
+# Set Block of Resnet
 class Resblock(nn.Module):
     def __init__(self):
         super().__init__()
@@ -144,6 +149,7 @@ class Resblock(nn.Module):
 
   
 '''
+    # Set Generator
 class Generator(nn.Module):
     def __init__(self):
         super().__init__()
